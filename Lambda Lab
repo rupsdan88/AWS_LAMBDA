@@ -1,0 +1,35 @@
+************AWS LAMBDA LAB **************
+NEED AWS IAM ROLE, S3 BUCKET, DYNAMO DB, LAMBDA Services.
+
+Step1:
+- Create IAM Role for Lambda and give dynamodb full access.
+Step2:
+- Create Lambda Function choose Author from scratch and then choose python 3.6 language
+- Enter Following Code
+
+import boto3
+from uuid import uuid4
+def lambda_handler(event, context):
+    s3 = boto3.client("s3")
+    dynamodb = boto3.resource('dynamodb')
+    for record in event['Records']:
+        bucket_name = record['s3']['bucket']['name']
+        object_key = record['s3']['object']['key']
+        size = record['s3']['object'].get('size', -1)
+        event_name = record ['eventName']
+        event_time = record['eventTime']
+        dynamoTable = dynamodb.Table('newtable')
+        dynamoTable.put_item(
+            Item={'unique': str(uuid4()), 'Bucket': bucket_name, 'Object': object_key,'Size': size, 'Event': event_name, 'EventTime': event_time})
+
+Step3:
+- Create S3 Bucket 
+
+Step4:
+- Go to Lambda and Add Trigger as a S3 and its bucket and choose all events
+
+Steps5:
+- Create DynamoDB table, table name as mention in above code(newtable) and primary key is (unique)
+
+Now Your Connection has been done, Lets check the code is working or not, You have to upload data/file to the s3 bucket and then check lambda will trigger this event with dynamo db
+- Go to dynamo db and and check table status will get entry for data has been added into s3 bucket
